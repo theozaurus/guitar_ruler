@@ -4,29 +4,69 @@
 
 $(function(){
 
+  var bufferSizes = [256, 512, 1024, 2048, 4096, 8192, 16384];
+
   var ruler = new Ruler();
 
-  var analyser;
-  var context = new webkitAudioContext();
-  var graph = new Graph('canvas-out');
-
-  var process = function(){
-    setInterval(function(){
-      FFTData = new Uint8Array(analyser.frequencyBinCount);
-      analyser.getByteFrequencyData(FFTData);
-      graph.update(FFTData);
-    },100);
-  };
+  var $fundamental = $('.js-fundamental');
 
   ruler.onStreamAvailable.add(function(r){
-    // Let's process that fool
-    analyser = context.createAnalyser();
-    analyser.fftSize = 2048; // 2048-point FFT
+    var context    = new webkitAudioContext();
+    var source     = context.createMediaStreamSource(r.stream);
+    var graph      = new Graph('canvas-out');
 
-    var sound = context.createMediaStreamSource(r.stream);
-    sound.connect(analyser);
-    // analyser.connect(aCtx.destination);
-    process();
+    var analyser = context.createAnalyser();
+    analyser.fftSize = 2048; // 2048-point FFT
+    analyser.smoothingTimeConstant = 0.3;
+
+    binToFreq = (function(){
+      var sampleRate = context.sampleRate;
+      var fftSize    = analyser.fftSize;
+      return function(bin){
+        return bin * (sampleRate / fftSize);
+      };
+    }());
+
+    var bufferSize = bufferSizes[4]; // Lower better latency, higher more reliable
+    var process    = context.createScriptProcessor(bufferSize, 1, 1);
+    process.onaudioprocess = function(audioProcessingEvent){
+      var data = new Uint8Array(analyser.frequencyBinCount);
+      analyser.getByteFrequencyData(data);
+
+      // Fundamental Frequency (using Harmonic Product Spectrum)
+      // https://ccrma.stanford.edu/~pdelac/154/m154paper.htm
+      var l = data.length;
+      var result = new Uint8Array(l);
+      var maxIndex;
+      var maxVal = 0;
+      for(var i = 0; i < l; i++){
+
+        result[i] += data[i];
+
+        ii = i * 2;
+        if(ii < l){ results[i] += data[ii]; }
+
+        ii = i * 4;
+        if(ii < l){ results[i] += data[ii]; }
+
+        ii = i * 8;
+        if(ii < l){ results[i] += data[ii]; }
+
+        ii = i * 16;
+        if(ii < l){ results[i] += data[ii]; }
+
+        if(result[i] > maxVal){ maxVal = result[i]; maxFreqBin = i; }
+      }
+
+      // FFT Graph
+      // graph.update(data);
+
+      $fundamental.html(binToFreq(maxFreqBin));
+    };
+
+    source.connect(analyser);
+    analyser.connect(process);
+    process.connect(context.destination);
   });
 
   ruler.start();
