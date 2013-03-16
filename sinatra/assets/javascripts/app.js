@@ -13,7 +13,8 @@ $(function(){
   ruler.onStreamAvailable.add(function(r){
     var context    = new webkitAudioContext();
     var source     = context.createMediaStreamSource(r.stream);
-    var graph      = new Graph('canvas-out');
+    var graph1     = new Graph('canvas-out1');
+    var graph2     = new Graph('canvas-out2');
 
     var analyser = context.createAnalyser();
     analyser.fftSize = 2048; // 2048-point FFT
@@ -59,7 +60,8 @@ $(function(){
       }
 
       // FFT Graph
-      // graph.update(data);
+      graph1.update(data);
+      graph2.update(result);
 
       $fundamental.html(binToFreq(maxFreqBin));
     };
