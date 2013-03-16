@@ -42,21 +42,22 @@ $(function(){
       var result = new Uint8Array(l);
       var maxIndex;
       var maxVal = 0;
+      var scaling = 2;
       for(var i = 0; i < l; i++){
 
-        result[i] += data[i];
+        result[i] = data[i] / scaling;
 
         ii = i * 2;
-        if(ii < l){ results[i] += data[ii]; }
+        if(ii < l){ result[i] += data[ii] / scaling; }
 
         ii = i * 4;
-        if(ii < l){ results[i] += data[ii]; }
+        if(ii < l){ result[i] += data[ii] / scaling; }
 
         ii = i * 8;
-        if(ii < l){ results[i] += data[ii]; }
+        if(ii < l){ result[i] += data[ii] / scaling; }
 
         ii = i * 16;
-        if(ii < l){ results[i] += data[ii]; }
+        if(ii < l){ result[i] += data[ii] / scaling; }
 
         if(result[i] > maxVal){ maxVal = result[i]; maxFreqBin = i; }
       }
