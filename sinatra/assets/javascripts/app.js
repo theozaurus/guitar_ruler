@@ -17,8 +17,10 @@ $(function(){
     var graph2     = new Graph('canvas-out2');
 
     var analyser = context.createAnalyser();
-    analyser.fftSize = 2048; // 2048-point FFT
+    analyser.fftSize = Math.pow(2,10); // Only allowed to be powers of 2, 11 max
     analyser.smoothingTimeConstant = 0.3;
+    analyser.minDecibels = -80 // Default -100
+    analyser.maxDecibels = -20 // Default -30
 
     binToFreq = (function(){
       var sampleRate = context.sampleRate;
