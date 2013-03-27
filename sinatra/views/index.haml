@@ -1,8 +1,10 @@
 %html
   %head
+    %link{:rel => "stylesheet", :href => "/assets/app.css"}
     %script{:src => "/assets/app.js"}
   %body
     %h1 Guitar Ruler
+    %input.js-file{:type => "file", :accept => "audio/*"}
     %canvas#canvas-out1
     .break
     %canvas#canvas-out2

@@ -1,5 +1,6 @@
 //= require callback
 //= require logger
+//= require jquery
 
 Ruler = (function(){
 
@@ -7,6 +8,8 @@ Ruler = (function(){
 
   return function(){
     var that = this;
+
+    var $file = $('.js-file');
 
     var onMicrophoneSuccess = function(stream){
       Logger.debug('Microphone stream available');
@@ -23,10 +26,17 @@ Ruler = (function(){
       navigator.webkitGetUserMedia({audio: true}, onMicrophoneSuccess, onMicrophoneFailure);
     };
 
+    $file.change(function(e){
+      var file = e.currentTarget.files[0];
+      that.onFileAvailable.handle(file);
+    });
+
     this.stream = null;
 
     this.onStreamAvailable   = new CallbackList({must_keep: true});
     this.onStreamUnavailable = new CallbackList({must_keep: true});
+
+    this.onFileAvailable     = new CallbackList({must_keep: true});
   };
 
 }());

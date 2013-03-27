@@ -5,9 +5,13 @@ Graph = (function(){
     var canvas = document.getElementById(canvas_id);
     var canvas_context = canvas.getContext("2d");
 
-    var num_bars = 300;
+
 
     this.update = function(fft_data){
+      var num_bars = fft_data.length;
+
+      canvas.width = num_bars;
+
       // Clear the canvas
       canvas_context.clearRect(0, 0, canvas.width, canvas.height);
 
