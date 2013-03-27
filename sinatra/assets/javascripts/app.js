@@ -10,8 +10,8 @@ $(function(){
 
   var $fundamental = $('.js-fundamental');
 
-  var context  = new webkitAudioContext();
-  var merger   = context.createChannelMerger();
+  var context = new webkitAudioContext();
+  var merger  = context.createChannelMerger();
 
   var graph1  = new Graph('canvas-out1');
   var graph2  = new Graph('canvas-out2');
@@ -33,13 +33,14 @@ $(function(){
   freqToBin = (function(){
     var sampleRate = context.sampleRate;
     var fftSize    = analyser.fftSize;
-    return function(bin){
-      return Math.floor(bin / (sampleRate / fftSize));
+    return function(freq){
+      return Math.floor(freq / (sampleRate / fftSize));
     };
   }());
 
   var bufferSize = bufferSizes[4]; // Lower better latency, higher more reliable
   var process    = context.createScriptProcessor(bufferSize, 1, 1);
+  var lastFundamental;
   process.onaudioprocess = function(audioProcessingEvent){
     var data = new Uint8Array(analyser.frequencyBinCount);
     analyser.getByteFrequencyData(data);
@@ -51,7 +52,7 @@ $(function(){
     var maxIndex;
     var maxVal = 0;
     var scaling = 3;
-    var minFreq = 70;
+    var minFreq = 80;
     var minBin  = freqToBin(minFreq);
     var maxFreqBin;
 
@@ -78,7 +79,14 @@ $(function(){
     graph1.update(data);
     graph2.update(result);
 
-    $fundamental.html(binToFreq(maxFreqBin));
+    var from  = Math.round(binToFreq(maxFreqBin));
+    var to    = Math.round(binToFreq(maxFreqBin+1));
+    var range = from + '..' + to;
+    $fundamental.html(range);
+
+    if(range != lastFundamental){ console.log(range); }
+
+    lastFundamental = range;
   };
 
   var linkUp = function(source){
@@ -103,7 +111,6 @@ $(function(){
 
     reader.onload = function(e){
       context.decodeAudioData(this.result, function(buffer){
-        console.warn(buffer);
         fileBuffer.buffer = buffer;
         fileBuffer.noteOn(0);
       });
